@@ -6,20 +6,25 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.PassengerService = void 0;
 const common_1 = require("@nestjs/common");
-const app_controller_1 = require("./app.controller");
-const app_service_1 = require("./app.service");
-const driver_module_1 = require("./driver/driver.module");
-const passenger_module_1 = require("./passenger/passenger.module");
-let AppModule = class AppModule {
+let PassengerService = class PassengerService {
+    passengers = [];
+    idCounter = 1;
+    addPassenger(passenger) {
+        const newPassenger = { id: this.idCounter++, ...passenger };
+        this.passengers.push(newPassenger);
+        return newPassenger;
+    }
+    getPassengers() {
+        return this.passengers;
+    }
+    getPassengerById(id) {
+        return this.passengers.find(p => p.id === id);
+    }
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
-    (0, common_1.Module)({
-        imports: [driver_module_1.DriverModule, passenger_module_1.PassengerModule],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
-    })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+exports.PassengerService = PassengerService;
+exports.PassengerService = PassengerService = __decorate([
+    (0, common_1.Injectable)()
+], PassengerService);
+//# sourceMappingURL=passenger.service.js.map
