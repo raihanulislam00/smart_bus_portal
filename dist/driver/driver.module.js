@@ -9,12 +9,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DriverModule = void 0;
 const common_1 = require("@nestjs/common");
 const driver_controller_1 = require("./driver.controller");
+const driver_service_1 = require("./driver.service");
 let DriverModule = class DriverModule {
 };
 exports.DriverModule = DriverModule;
 exports.DriverModule = DriverModule = __decorate([
     (0, common_1.Module)({
         controllers: [driver_controller_1.DriverController],
+        providers: [driver_service_1.DriverService],
     })
 ], DriverModule);
 //# sourceMappingURL=driver.module.js.map

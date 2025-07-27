@@ -15,75 +15,161 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PassengerController = void 0;
 const common_1 = require("@nestjs/common");
 const passenger_service_1 = require("./passenger.service");
-const passenger_dto_1 = require("./passenger.dto");
+const createPassenger_dto_1 = require("./dto/createPassenger.dto");
+const updatePassenger_dto_1 = require("./dto/updatePassenger.dto");
+const passenger_exist_pipe_1 = require("./pipes/passenger-exist.pipe");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
+const multer_2 = require("multer");
 let PassengerController = class PassengerController {
-    passengerService;
-    constructor(passengerService) {
-        this.passengerService = passengerService;
+    passengerservice;
+    constructor(passengerservice) {
+        this.passengerservice = passengerservice;
     }
-    addPassenger(passengerDto) {
-        console.log('Adding passenger:', passengerDto);
-        return this.passengerService.addPassenger(passengerDto);
+    getPassengername(name) {
+        return this.passengerservice.getPassengerName(name);
     }
-    getPassengers() {
-        return this.passengerService.getPassengers();
+    getPassengerWithQuery(name) {
+        return this.passengerservice.getPassengerName(name || 'world');
     }
-    getPassengerById(id) {
-        return this.passengerService.getPassengerById(id);
+    findAll(search) {
+        const extractAllPost = this.passengerservice.findAll();
+        if (search) {
+            return extractAllPost.filter(singlePost => singlePost.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
+        }
+        return extractAllPost;
     }
-    uploadFile(file) {
-        console.log('Uploaded file:', file);
-        return { filename: file.filename };
+    findOne(id) {
+        return this.passengerservice.findOne(id);
+    }
+    create(createPassengerData) {
+        const dataToCreate = {
+            ...createPassengerData,
+            phone: String(createPassengerData.phone)
+        };
+        return this.passengerservice.create(dataToCreate);
+    }
+    update(id, updatePassengerData) {
+        const dataToUpdate = {
+            ...updatePassengerData,
+            phone: updatePassengerData.phone !== undefined ? String(updatePassengerData.phone) : undefined
+        };
+        return this.passengerservice.update(id, dataToUpdate);
+    }
+    remove(id) {
+        this.passengerservice.remove(id);
+    }
+    uploadPhoto(id, file) {
+        if (!file) {
+            throw new common_1.BadRequestException('Photo file is required and must be an image (jpg, jpeg, png, webp)');
+        }
+        return this.passengerservice.updatePhotoPath(id, file.filename);
+    }
+    getPhoto(filename, res) {
+        res.sendFile(filename, { root: './uploads/photos' });
     }
 };
 exports.PassengerController = PassengerController;
 __decorate([
-    (0, common_1.Post)('add'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Get)('user/:name'),
+    __param(0, (0, common_1.Param)('name')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [passenger_dto_1.PassengerDTO]),
-    __metadata("design:returntype", void 0)
-], PassengerController.prototype, "addPassenger", null);
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", String)
+], PassengerController.prototype, "getPassengername", null);
 __decorate([
-    (0, common_1.Get)('all'),
+    (0, common_1.Get)('query'),
+    __param(0, (0, common_1.Query)('name')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], PassengerController.prototype, "getPassengers", null);
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", String)
+], PassengerController.prototype, "getPassengerWithQuery", null);
+__decorate([
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('search')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Array)
+], PassengerController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe, passenger_exist_pipe_1.PassengerExistPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Object)
+], PassengerController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Post)('register'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        disableErrorMessages: false,
+    })),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [createPassenger_dto_1.CreatePassengerDto]),
+    __metadata("design:returntype", Object)
+], PassengerController.prototype, "create", null);
+__decorate([
+    (0, common_1.Put)(':id'),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        disableErrorMessages: false,
+    })),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe, passenger_exist_pipe_1.PassengerExistPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, updatePassenger_dto_1.UpdatePassengerDto]),
+    __metadata("design:returntype", Object)
+], PassengerController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe, passenger_exist_pipe_1.PassengerExistPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
-], PassengerController.prototype, "getPassengerById", null);
+], PassengerController.prototype, "remove", null);
 __decorate([
-    (0, common_1.Post)('upload'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
+    (0, common_1.Post)('upload/:id'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('photo', {
         fileFilter: (req, file, cb) => {
-            if (file.originalname.match(/\.(jpg|jpeg|png|webp)$/)) {
+            if (file.originalname.match(/^.*\.(jpg|jpeg|png|webp)$/)) {
                 cb(null, true);
             }
             else {
-                cb(new multer_1.MulterError('LIMIT_UNEXPECTED_FILE', 'file'), false);
+                cb(new multer_1.MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
             }
         },
-        limits: { fileSize: 30_000 },
-        storage: (0, multer_1.diskStorage)({
-            destination: './uploads',
+        limits: {
+            fileSize: 2 * 1024 * 1024
+        },
+        storage: (0, multer_2.diskStorage)({
+            destination: './uploads/photos',
             filename: (req, file, cb) => {
-                cb(null, Date.now() + '_' + file.originalname);
+                const uniqueName = `${Date.now()}-${file.originalname}`;
+                cb(null, uniqueName);
             },
-        }),
+        })
     })),
-    __param(0, (0, common_1.UploadedFile)()),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe, passenger_exist_pipe_1.PassengerExistPipe)),
+    __param(1, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
-], PassengerController.prototype, "uploadFile", null);
+], PassengerController.prototype, "uploadPhoto", null);
+__decorate([
+    (0, common_1.Get)('photo/:filename'),
+    __param(0, (0, common_1.Param)('filename')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PassengerController.prototype, "getPhoto", null);
 exports.PassengerController = PassengerController = __decorate([
     (0, common_1.Controller)('passenger'),
     __metadata("design:paramtypes", [passenger_service_1.PassengerService])

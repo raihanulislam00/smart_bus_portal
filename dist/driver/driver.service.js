@@ -9,6 +9,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DriverService = void 0;
 const common_1 = require("@nestjs/common");
 let DriverService = class DriverService {
+    drivers = [];
+    createDriver(driverDto) {
+        this.drivers.push(driverDto);
+        return {
+            message: 'Driver created successfully',
+            data: driverDto,
+        };
+    }
+    findAll() {
+        return this.drivers;
+    }
+    findById(id) {
+        const driver = this.drivers.find(driver => driver.id === id);
+        if (!driver) {
+            return { message: 'Driver not found' };
+        }
+        return driver;
+    }
 };
 exports.DriverService = DriverService;
 exports.DriverService = DriverService = __decorate([
