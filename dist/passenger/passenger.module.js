@@ -16,7 +16,7 @@ exports.PassengerModule = PassengerModule;
 exports.PassengerModule = PassengerModule = __decorate([
     (0, common_1.Module)({
         controllers: [passenger_controller_1.PassengerController],
-        providers: [passenger_service_1.PassengerService],
+        providers: [passenger_service_1.PassengerService]
     })
 ], PassengerModule);
 //# sourceMappingURL=passenger.module.js.map

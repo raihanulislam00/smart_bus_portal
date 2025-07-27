@@ -1,14 +1,15 @@
-import { PassengerDTO } from './passenger.dto';
+import { PassengerInterface } from './interfaces/passenger.interface';
 export declare class PassengerService {
-    private passengers;
-    private idCounter;
-    addPassenger(passenger: PassengerDTO): {
-        fullname: string;
-        password: string;
-        email: string;
-        filename: string;
-        id: number;
+    getPassenger(): string;
+    getPassengerName(name: string): string;
+    private passenger;
+    findAll(): PassengerInterface[];
+    findOne(id: number): PassengerInterface;
+    create(createPassengerData: Omit<PassengerInterface, 'id' | 'createdAt'>): PassengerInterface;
+    update(id: number, updatePassengerData: Partial<Omit<PassengerInterface, 'id' | 'createdAt'>>): PassengerInterface;
+    remove(id: number): {
+        message: string;
     };
-    getPassengers(): any[];
-    getPassengerById(id: number): any;
+    private getNextId;
+    updatePhotoPath(id: number, filename: string): PassengerInterface;
 }
