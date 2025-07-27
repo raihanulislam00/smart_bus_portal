@@ -12,22 +12,6 @@ getPassengerName(name : string):string{
     return `Hello Passenger ${name} !`
 }
 
-// getAllPassenger(){
-//     return[
-// {
-//     id: 1,Name: 'Reza',email:'shahriarreza18@gmail.com'
-// },
-// {
-//     id: 2,Name: 'Shihab',email:'shihab@gmail.com'
-// }
-//     ]
-// }
-
-// getPassengerById(id: number){
-//     const passenger= this.getAllPassenger().find(passenger=>passenger.id===id)
-//     return passenger;
-// }
-
 private passenger: PassengerInterface[]=[
     {
         id: 1,
@@ -35,7 +19,6 @@ private passenger: PassengerInterface[]=[
         mail:'raihanulislam@gmail.com',
         phone: '1632641330',
         address:'Dhaka, Bangladesh',
-        //content:'This is Passenger One Dashboard',
         createdAt:new Date(),
         gender:'male',
         password:'123456',
@@ -46,7 +29,6 @@ private passenger: PassengerInterface[]=[
         mail:'shihab@gmail.com',
         phone: '1632641440',
         address:'Ghatail, Tangail',
-        //content:'This is Passenger Two Dashboard',
         createdAt:new Date(),
         gender:'male',
         password:'123456',
