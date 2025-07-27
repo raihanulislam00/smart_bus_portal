@@ -8,7 +8,7 @@ async function bootstrap() {
     app.useStaticAssets((0, path_1.join)(__dirname, '..', 'uploads'), {
         prefix: '/uploads/',
     });
-    await app.listen(3002);
+    await app.listen(process.env.Port ?? 3000);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
