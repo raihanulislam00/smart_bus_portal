@@ -5,7 +5,7 @@ import { Post  } from './interfaces/post.interface';
 @Injectable()
 export class AdminService {
 getAdmin():string{
-    return 'Hello Nest Js';
+    return 'Hello This is Admin Dashboard';
 }
 
 getAdminName(name : string):string{
@@ -31,21 +31,25 @@ getAdminName(name : string):string{
 private admin: Post[]=[
     {
         id: 1,
-        name:'Shahriar Reza',
-        mail:'shahriarreza18@gmail.com',
-        phone: '1632641330',
-        address:'Dhaka, Bangladesh',
-        content:'This is Admin One Dashboard',
-        createdAt:new Date(),
+        name: 'Shahriar Reza',
+        mail: 'shahriarreza18@gmail.com',
+        address: 'Dhaka, Bangladesh',
+        content: 'This is Admin One Dashboard',
+        createdAt: new Date(),
+        password: '',
+        birthDate: new Date(),
+        socialMediaLink: ''
     },
     {
         id: 2,
-        name:'Shihab Reza',
-        mail:'shahriarreza@gmail.com',
-        phone: '1632641440',
-        address:'Ghatail, Tangail',
-        content:'This is Admin Two Dashboard',
-        createdAt:new Date(),
+        name: 'Shihab Reza',
+        mail: 'shahriarreza@gmail.com',
+        address: 'Ghatail, Tangail',
+        content: 'This is Admin Two Dashboard',
+        createdAt: new Date(),
+        password: '',
+        birthDate: new Date(),
+        socialMediaLink: ''
     },
 ];
 
@@ -106,5 +110,15 @@ private getNextId():number{
     ?Math.max(...this.admin.map(post=> post.id))+1:1
 }
 
+updatePhotoPath(id: number, filename: string): Post {
+    const index = this.admin.findIndex(post => post.id === id);
+    if (index === -1) {
+      throw new NotFoundException(`Admin with ID ${id} not found`);
+    }
+    this.admin[index].photoPath = filename;
+    return this.admin[index];
+  }
 }
+
+
 

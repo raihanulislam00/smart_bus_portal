@@ -1,10 +1,14 @@
-export interface Post{
-    id: number;
-    name: string;
-    mail: string;
-    phone: string;
-    address?: string;
-    content: string;
-    createdAt:Date;
-    updatedAt?:Date;
+export interface Post {
+  id: number;
+  name: string;
+  password: string;
+  mail: string;
+  birthDate: Date;
+  address?: string;
+  content: string;
+  socialMediaLink: string;
+  photoPath?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+   
 }

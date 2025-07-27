@@ -1,14 +1,20 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Query, Search, UsePipes, ValidationPipe } from '@nestjs/common';
+import { 
+  Body, Controller, Delete, Get, HttpCode, HttpStatus, 
+  Param, ParseIntPipe, Post, Put, Query, UsePipes, 
+  ValidationPipe, UploadedFile, UseInterceptors, Res, 
+  BadRequestException
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MulterError, diskStorage } from 'multer';
 import { AdminService } from './admin.service';
-import { Post as PostInterface} from './interfaces/post.interface';
-import { first } from 'rxjs';
+import { Post as PostInterface } from './interfaces/post.interface';
 import { CreateAdminDto } from './dto/createAdmin.dto';
 import { UpdateAdminDto } from './dto/updateAdmin.dto';
 import { AdminExistPipe } from './pipes/admin-exist.pipe';
 
 @Controller('admin')
 export class AdminController {
-    constructor(private readonly adminservice : AdminService){}
+  constructor(private readonly adminservice: AdminService) {}
 
     //@Get()
     //getAdmin() :string{
@@ -64,7 +70,6 @@ export class AdminController {
     create(@Body()createAdminData : CreateAdminDto): PostInterface {
         const dataToCreate = {
             ...createAdminData,
-            phone: String(createAdminData.phone)
         };
         return this.adminservice.create(dataToCreate);
     }
@@ -81,7 +86,6 @@ export class AdminController {
     @Body()updateAdminData:UpdateAdminDto,):PostInterface{
         const dataToUpdate = {
             ...updateAdminData,
-            phone: updateAdminData.phone !== undefined ? String(updateAdminData.phone) : undefined
         };
         return this.adminservice.update(id, dataToUpdate);
     }
@@ -92,7 +96,49 @@ export class AdminController {
          this.adminservice.remove(id);
     }
 
+
+    @Post('upload/:id')
+    @UseInterceptors(FileInterceptor('photo', 
+    {
+      fileFilter: (req, file, cb) => {
+        if (file.originalname.match(/^.*\.(jpg|jpeg|png|webp)$/)) {
+          cb(null, true);
+        } else {
+          cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
+        }
+      },
+      limits: { 
+        fileSize: 2 * 1024 * 1024 // 2MB 
+      },
+      storage: diskStorage({
+        destination: './uploads/photos',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}-${file.originalname}`;
+          cb(null, uniqueName);
+        },
+      })
+    }
+  ))
+
+
+    uploadPhoto(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+      if (!file) {
+        throw new BadRequestException('Photo file is required and must be an image (jpg, jpeg, png, webp)');
+      }
+      return this.adminservice.updatePhotoPath(id, file.filename);
+  }
+
+  
+  @Get('photo/:filename')
+  getPhoto(@Param('filename') filename: string, @Res() res) {
+    res.sendFile(filename, { root: './uploads/photos' });
+  }
 }
+
+
 
 
 
