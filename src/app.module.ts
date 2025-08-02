@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DriverModule } from './driver/driver.module';
 import { PassengerModule } from './passenger/passenger.module';
 import { Driver } from './driver/entities/driver';
 import { TypeOrmModule } from '@nestjs/typeorm';
