@@ -7,7 +7,7 @@ export class PassengerExistPipe implements PipeTransform {
 
     async transform(value: any, metadata: ArgumentMetadata) {
         try {
-            const passenger = await this.passengerService.findOne(value);
+            const passenger = await this.passengerService.findById(value);
             if (!passenger) {
                 throw new NotFoundException(`Passenger with ID ${value} does not exist.`);
             }

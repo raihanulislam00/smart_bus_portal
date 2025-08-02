@@ -1,4 +1,4 @@
-export interface PassengerInterface{
+export declare class Passenger {
     id: number;
     username: string;
     fullName: string;
@@ -11,4 +11,5 @@ export interface PassengerInterface{
     gender?: string;
     password?: string;
     photoPath?: string;
+    generateId(): void;
 }

@@ -10,14 +10,27 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
-const driver_module_1 = require("./driver/driver.module");
 const passenger_module_1 = require("./passenger/passenger.module");
+const typeorm_1 = require("@nestjs/typeorm");
+const passenger_entities_1 = require("./passenger/entities/passenger.entities");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [driver_module_1.DriverModule, passenger_module_1.PassengerModule],
+        imports: [
+            typeorm_1.TypeOrmModule.forRoot({
+                type: 'postgres',
+                host: 'localhost',
+                port: 5432,
+                username: 'postgres',
+                password: '12345678',
+                database: 'passenger',
+                entities: [passenger_entities_1.Passenger],
+                synchronize: true,
+            }),
+            passenger_module_1.PassengerModule
+        ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

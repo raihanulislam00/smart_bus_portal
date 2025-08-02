@@ -1,104 +1,147 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { AppService } from 'src/app.service';
-import { PassengerInterface } from './interfaces/passenger.interface';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Like } from 'typeorm';
+import { Passenger } from './entities/passenger.entities';
+import { CreatePassengerDto } from './dto/createPassenger.dto';
+import { UpdatePassengerDto } from './dto/updatePassenger.dto';
 
 @Injectable()
 export class PassengerService {
-getPassenger():string{
-    return 'Hello Nest Js';
-}
+    constructor(
+        @InjectRepository(Passenger)
+        private readonly passengerRepository: Repository<Passenger>
+    ) {}
 
-getPassengerName(name : string):string{
-    return `Hello Passenger ${name} !`
-}
+    // Create a user
+    async create(createPassengerDto: CreatePassengerDto): Promise<Passenger> {
+        try {
+            // Check if username already exists
+            const existingUser = await this.passengerRepository.findOne({
+                where: { username: createPassengerDto.username }
+            });
 
-private passenger: PassengerInterface[]=[
-    {
-        id: 1,
-        name:'Raihanul Islam',
-        mail:'raihanulislam@gmail.com',
-        phone: '1632641330',
-        address:'Dhaka, Bangladesh',
-        createdAt:new Date(),
-        gender:'male',
-        password:'123456',
-    },
-    {
-        id: 2,
-        name:'Shihab',
-        mail:'shihab@gmail.com',
-        phone: '1632641440',
-        address:'Ghatail, Tangail',
-        createdAt:new Date(),
-        gender:'male',
-        password:'123456',
-    },
-];
+            if (existingUser) {
+                throw new ConflictException(`Username '${createPassengerDto.username}' already exists`);
+            }
 
+            const passenger = this.passengerRepository.create({
+                ...createPassengerDto,
+                isActive: createPassengerDto.isActive ?? false // Default to false as per requirement
+            });
 
-findAll():PassengerInterface[]{
-    return this.passenger;
-}
-
-
-findOne(id:number):PassengerInterface{
-    const singlePost=this.passenger.find(post=>post.id===id);
-    if(!singlePost){
-        throw new NotFoundException(`Passenger with ID ${id} is not Found`);
+            return await this.passengerRepository.save(passenger);
+        } catch (error) {
+            if (error instanceof ConflictException) {
+                throw error;
+            }
+            throw new Error(`Failed to create passenger: ${error.message}`);
+        }
     }
-    return singlePost;
-}
 
+    // Retrieve users whose full name contains a specific substring
+    async findByFullNameSubstring(substring: string): Promise<Passenger[]> {
+        if (!substring || substring.trim() === '') {
+            throw new Error('Search substring cannot be empty');
+        }
 
-create(createPassengerData: Omit<PassengerInterface,'id' | 'createdAt'>): PassengerInterface{
-    const newPost: PassengerInterface={
-        id:this.getNextId(),
-        ...createPassengerData,
-        createdAt:new Date(),
+        return await this.passengerRepository.find({
+            where: {
+                fullName: Like(`%${substring}%`)
+            },
+            order: {
+                fullName: 'ASC'
+            }
+        });
     }
-    this.passenger.push(newPost);
-    return newPost;
-}
 
+    // Retrieve a user based on their unique username
+    async findByUsername(username: string): Promise<Passenger> {
+        if (!username || username.trim() === '') {
+            throw new Error('Username cannot be empty');
+        }
 
-update(id: number, updatePassengerData: Partial<Omit<PassengerInterface,'id' | 'createdAt'>>): PassengerInterface{
-    const currentIndexToEdit=this.passenger.findIndex(
-        (post)=>post.id===id,
-    );
-    if(currentIndexToEdit===-1){
-        throw new NotFoundException(`Passenger with ID ${id} not found !`)
+        const passenger = await this.passengerRepository.findOne({
+            where: { username }
+        });
+
+        if (!passenger) {
+            throw new NotFoundException(`Passenger with username '${username}' not found`);
+        }
+
+        return passenger;
     }
-    this.passenger[currentIndexToEdit]={
-        ...this.passenger[currentIndexToEdit],
-        ...updatePassengerData,
-        updatedAt: new Date(),
+
+    // Remove a user based on their unique username
+    async removeByUsername(username: string): Promise<{ message: string }> {
+        if (!username || username.trim() === '') {
+            throw new Error('Username cannot be empty');
+        }
+
+        const passenger = await this.passengerRepository.findOne({
+            where: { username }
+        });
+
+        if (!passenger) {
+            throw new NotFoundException(`Passenger with username '${username}' not found`);
+        }
+
+        await this.passengerRepository.remove(passenger);
+        return { message: `Passenger with username '${username}' has been deleted` };
     }
-    return this.passenger[currentIndexToEdit];
-}
 
-
-remove(id:number):{message:string}{
-    const currentIndexToDelete = this.passenger.findIndex((post)=>post.id===id);
-     if(currentIndexToDelete===-1){
-        throw new NotFoundException(`Passenger with ID ${id} is not found`)
+    // Additional utility methods
+    async findAll(): Promise<Passenger[]> {
+        return await this.passengerRepository.find({
+            order: {
+                createdAt: 'DESC'
+            }
+        });
     }
-    this.passenger.splice(currentIndexToDelete,1)
-        return {message:`Passenger with ID ${id} has been deleted...`}  
-}
 
+    async findById(id: number): Promise<Passenger> {
+        const passenger = await this.passengerRepository.findOne({
+            where: { id }
+        });
 
-private getNextId():number{
-    return this.passenger.length>0
-    ?Math.max(...this.passenger.map(post=> post.id))+1:1
-}
-updatePhotoPath(id: number, filename: string): PassengerInterface {
-    const index = this.passenger.findIndex(post => post.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Passenger with ID ${id} not found`);
+        if (!passenger) {
+            throw new NotFoundException(`Passenger with ID ${id} not found`);
+        }
+
+        return passenger;
     }
-    this.passenger[index].photoPath = filename;
-    return this.passenger[index];
-  }
+
+    async update(id: number, updatePassengerDto: UpdatePassengerDto): Promise<Passenger> {
+        const passenger = await this.findById(id);
+
+        // Check if username is being updated and if it already exists
+        if (updatePassengerDto.username && updatePassengerDto.username !== passenger.username) {
+            const existingUser = await this.passengerRepository.findOne({
+                where: { username: updatePassengerDto.username }
+            });
+
+            if (existingUser) {
+                throw new ConflictException(`Username '${updatePassengerDto.username}' already exists`);
+            }
+        }
+
+        Object.assign(passenger, updatePassengerDto);
+        return await this.passengerRepository.save(passenger);
+    }
+
+    async updatePhotoPath(id: number, filename: string): Promise<Passenger> {
+        const passenger = await this.findById(id);
+        passenger.photoPath = filename;
+        return await this.passengerRepository.save(passenger);
+    }
+
+    // Legacy methods for backward compatibility (if needed)
+    getPassenger(): string {
+        return 'Hello Nest Js';
+    }
+
+    getPassengerName(name: string): string {
+        return `Hello Passenger ${name} !`;
+    }
 }
 
 

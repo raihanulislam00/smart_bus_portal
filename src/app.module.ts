@@ -1,12 +1,23 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DriverModule } from './driver/driver.module';
 import { PassengerModule } from './passenger/passenger.module';
-//import { PassengerModule } from './passenger/passenger.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Passenger } from './passenger/entities/passenger.entities';
 
 @Module({
-  imports: [DriverModule, PassengerModule],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'postgres',
+      password: '12345678',
+      database: 'passenger',
+      entities: [Passenger],
+      synchronize: true,
+    }),
+    PassengerModule],
   controllers: [AppController],
   providers: [AppService],
 })

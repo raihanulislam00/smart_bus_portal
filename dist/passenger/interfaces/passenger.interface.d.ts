@@ -1,4 +1,4 @@
-export interface PassengerInterface{
+export interface PassengerInterface {
     id: number;
     username: string;
     fullName: string;
