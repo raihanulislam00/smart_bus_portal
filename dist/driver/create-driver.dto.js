@@ -10,9 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateDriverDto = void 0;
+const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 class CreateDriverDto {
     id;
+    fullName;
+    age;
     name;
     email;
     nid;
@@ -23,6 +26,17 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)({ message: 'Name is required' }),
     __metadata("design:type", Number)
 ], CreateDriverDto.prototype, "id", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateDriverDto.prototype, "fullName", void 0);
+__decorate([
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsInt)({ message: 'Age must be an integer number' }),
+    (0, class_validator_1.Min)(0, { message: 'Age must not be less than 0' }),
+    __metadata("design:type", Number)
+], CreateDriverDto.prototype, "age", void 0);
 __decorate([
     (0, class_validator_1.IsNotEmpty)({ message: 'Name is required' }),
     (0, class_validator_1.Matches)(/^[A-Za-z\s]+$/, {
@@ -39,8 +53,8 @@ __decorate([
 ], CreateDriverDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsNotEmpty)({ message: 'NID is required' }),
-    (0, class_validator_1.Matches)(/^\d{10,17}$/, {
-        message: 'NID must be between 10 to 17 digits',
+    (0, class_validator_1.Matches)(/^\d{10,13}$/, {
+        message: 'NID must be between 10 to 13 digits , and nid must have number ,',
     }),
     __metadata("design:type", String)
 ], CreateDriverDto.prototype, "nid", void 0);

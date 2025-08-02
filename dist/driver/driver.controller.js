@@ -14,8 +14,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DriverController = void 0;
 const common_1 = require("@nestjs/common");
-const create_driver_dto_1 = require("./create-driver.dto");
 const driver_service_1 = require("./driver.service");
+const create_driver_dto_1 = require("./create-driver.dto");
+const update_status_dto_1 = require("./update-status.dto");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
 const multer_2 = require("multer");
@@ -24,24 +25,30 @@ let DriverController = class DriverController {
     constructor(driverService) {
         this.driverService = driverService;
     }
-    create(driverDto, nidImage) {
+    async createDriver(driverDto, nidImage) {
         if (!nidImage) {
             throw new common_1.BadRequestException('NID image is required and must be under 2MB');
         }
-        driverDto.id = Number(driverDto.id);
-        return this.driverService.createDriver({
-            ...driverDto,
-            nidImage: nidImage.filename,
-        });
+        driverDto.nidImage = nidImage.filename;
+        return await this.driverService.createDriver(driverDto);
     }
     getDriverById(id) {
-        return this.driverService.findById(id);
+        return this.driverService.findDriverById(id);
     }
     getAllDrivers() {
-        return this.driverService.findAll();
+        return this.driverService.findAllDrivers();
     }
     getNidImage(name, res) {
         return res.sendFile(name, { root: './uploads/nid' });
+    }
+    updateStatus(id, dto) {
+        return this.driverService.updateDriverStatus(id, dto);
+    }
+    getInactiveDrivers() {
+        return this.driverService.getInactiveDrivers();
+    }
+    getDriversOlderThan(age) {
+        return this.driverService.getDriversOlderThan(age);
     }
 };
 exports.DriverController = DriverController;
@@ -67,8 +74,8 @@ __decorate([
     __param(1, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_driver_dto_1.CreateDriverDto, Object]),
-    __metadata("design:returntype", void 0)
-], DriverController.prototype, "create", null);
+    __metadata("design:returntype", Promise)
+], DriverController.prototype, "createDriver", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
@@ -90,6 +97,27 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], DriverController.prototype, "getNidImage", null);
+__decorate([
+    (0, common_1.Patch)(':id/status'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, update_status_dto_1.UpdateStatusDto]),
+    __metadata("design:returntype", void 0)
+], DriverController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.Get)('inactive'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], DriverController.prototype, "getInactiveDrivers", null);
+__decorate([
+    (0, common_1.Get)('older-than/:age'),
+    __param(0, (0, common_1.Param)('age', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], DriverController.prototype, "getDriversOlderThan", null);
 exports.DriverController = DriverController = __decorate([
     (0, common_1.Controller)('driver'),
     __metadata("design:paramtypes", [driver_service_1.DriverService])

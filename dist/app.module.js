@@ -12,12 +12,24 @@ const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const driver_module_1 = require("./driver/driver.module");
 const passenger_module_1 = require("./passenger/passenger.module");
+const driver_1 = require("./driver/entities/driver");
+const typeorm_1 = require("@nestjs/typeorm");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [driver_module_1.DriverModule, passenger_module_1.PassengerModule],
+        imports: [driver_module_1.DriverModule, passenger_module_1.PassengerModule, typeorm_1.TypeOrmModule.forRoot({ type: 'postgres',
+                host: 'localhost',
+                port: 5432,
+                username: 'postgres',
+                password: '12345',
+                database: 'bus_portal',
+                autoLoadEntities: true,
+                entities: [driver_1.Driver],
+                synchronize: true,
+            })
+        ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })
