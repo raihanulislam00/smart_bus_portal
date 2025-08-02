@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { PassengerModule } from './passenger/passenger.module';
 import { Driver } from './driver/entities/driver';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Passenger } from './passenger/entities/passenger.entities';
+import { DriverModule } from './driver/driver.module';
 //import { PassengerModule } from './passenger/passenger.module';
 
 @Module({
@@ -15,7 +17,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
  password: '12345',
  database: 'bus_portal',
  autoLoadEntities: true,
-  entities: [Driver],
+  entities: [Driver, Passenger],
  synchronize: true,
  })
 ],
