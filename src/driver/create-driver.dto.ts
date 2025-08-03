@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsString,
@@ -6,12 +7,22 @@ import {
   IsNotEmpty,
   IsOptional,
   IsEmail,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateDriverDto {
 //  @IsInt({ message: 'ID must be an integer' })
 @IsNotEmpty({ message: 'Name is required' })
   id: number;
+
+  @IsString()
+  @MaxLength(100)
+  fullName: string;
+
+  @Type(() => Number) // 👈 THIS WILL CONVERT string to number
+  @IsInt({ message: 'Age must be an integer number' })
+  @Min(0, { message: 'Age must not be less than 0' })
+  age: number;
 
   @IsNotEmpty({ message: 'Name is required' })
   @Matches(/^[A-Za-z\s]+$/, {
@@ -34,8 +45,8 @@ export class CreateDriverDto {
   email: string;
 
   @IsNotEmpty({ message: 'NID is required' })
-  @Matches(/^\d{10,17}$/, {
-    message: 'NID must be between 10 to 17 digits',
+  @Matches(/^\d{10,13}$/, {
+    message: 'NID must be between 10 to 13 digits , and nid must have number ,',
   })
   nid: string;
 
