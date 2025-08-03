@@ -23,20 +23,10 @@ export class UpdateAdminDto {
   })
   password?: string;
 
-  @IsOptional()
-  @IsDateString()
-  birthDate?: Date;
 
   @IsOptional()
   @IsUrl()
   socialMediaLink?: string;
-
-  @IsOptional()
-  @IsNotEmpty({ message: 'Content is required' })
-  @IsString({ message: 'Content must be a string' })
-  @MinLength(10, { message: 'Content must be at least 10 characters long' })
-  @MaxLength(150, { message: 'Content must not exceed 150 characters' })
-  content?: string;
 
   @IsOptional()
   @IsNotEmpty({ message: 'Mail is required' })
@@ -46,9 +36,7 @@ export class UpdateAdminDto {
   mail?: string;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'Phone is required' })
-  @IsString({ message: 'Phone must be a string' })
-  @MinLength(11, { message: 'Phone must be at least 11 digits long' })
-  @MaxLength(11, { message: 'Phone must not exceed 11 digits'})
-  phone?: string;
+  @IsString({ message: 'Country must be a string' })
+  @MaxLength(30, { message: 'Country must not exceed 30 characters' })
+  country?: string;
 }
