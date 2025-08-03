@@ -1,124 +1,76 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { AppService } from 'src/app.service';
-import { Post  } from './interfaces/post.interface';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { AdminEntity } from './entities/admin.entity';
+import { CreateAdminDto } from './dto/createAdmin.dto';
+import { UpdateAdminDto } from './dto/updateAdmin.dto';
 
 @Injectable()
 export class AdminService {
-getAdmin():string{
-    return 'Hello This is Admin Dashboard';
-}
+  constructor(
+    @InjectRepository(AdminEntity) 
+    private adminRepository: Repository<AdminEntity>,
+  ) {}
 
-getAdminName(name : string):string{
-    return `Hello Admin ${name} !`
-}
+  async findAll(): Promise<AdminEntity[]> {
+    return this.adminRepository.find();
+  }
 
-// getAllAdmin(){
-//     return[
-// {
-//     id: 1,Name: 'Reza',email:'shahriarreza18@gmail.com'
-// },
-// {
-//     id: 2,Name: 'Shihab',email:'shihab@gmail.com'
-// }
-//     ]
-// }
-
-// getAdminById(id: number){
-//     const admin= this.getAllAdmin().find(admin=>admin.id===id)
-//     return admin;
-// }
-
-private admin: Post[]=[
-    {
-        id: 1,
-        name: 'Shahriar Reza',
-        mail: 'shahriarreza18@gmail.com',
-        address: 'Dhaka, Bangladesh',
-        content: 'This is Admin One Dashboard',
-        createdAt: new Date(),
-        password: '',
-        birthDate: new Date(),
-        socialMediaLink: ''
-    },
-    {
-        id: 2,
-        name: 'Shihab Reza',
-        mail: 'shahriarreza@gmail.com',
-        address: 'Ghatail, Tangail',
-        content: 'This is Admin Two Dashboard',
-        createdAt: new Date(),
-        password: '',
-        birthDate: new Date(),
-        socialMediaLink: ''
-    },
-];
-
-
-findAll():Post[]{
-    return this.admin;
-}
-
-
-findOne(id:number):Post{
-    const singlePost=this.admin.find(post=>post.id===id);
-    if(!singlePost){
-        throw new NotFoundException(`Admin with ID ${id} is not Found`);
+  async findOne(id: number): Promise<AdminEntity> {
+    const admin = await this.adminRepository.findOneBy({ id });
+    if (!admin) {
+      throw new NotFoundException(`Admin with ID ${id} is not Found`);
     }
-    return singlePost;
-}
+    return admin;
+  }
 
+  async create(createAdminData: CreateAdminDto): Promise<AdminEntity> {
+    const newAdmin = new AdminEntity();
+    Object.assign(newAdmin, createAdminData);
+    return this.adminRepository.save(newAdmin);
+  }
 
-create(createAdminData: Omit<Post,'id' | 'createdAt'>): Post{
-    const newPost: Post={
-        id:this.getNextId(),
-        ...createAdminData,
-        createdAt:new Date(),
+  async update(id: number, updateAdminData: UpdateAdminDto): Promise<AdminEntity> {
+    const adminToUpdate = await this.findOne(id);
+    Object.assign(adminToUpdate, updateAdminData);
+    return this.adminRepository.save(adminToUpdate);
+  }
+
+  async remove(id: number): Promise<void> {
+    const adminToDelete = await this.findOne(id);
+    await this.adminRepository.remove(adminToDelete);
+  }
+
+  async updateCountry(id: number, country: string): Promise<AdminEntity> {
+    const admin = await this.findOne(id);
+    admin.country = country;
+    return this.adminRepository.save(admin);
+  }
+
+  async findByJoiningDate(date: Date): Promise<AdminEntity[]> {
+    return this.adminRepository
+      .createQueryBuilder('admin')
+      .where('DATE(admin.joiningDate) = :date', { 
+        date: date.toISOString().split('T')[0] 
+      })
+      .getMany();
+  }
+
+  async findWithDefaultCountry(): Promise<AdminEntity[]> {
+    return this.adminRepository.find({ where: { country: 'Unknown' } });
+  }
+
+  async updatePhotoPath(id: number, filename: string): Promise<AdminEntity> {
+    const admin = await this.findOne(id);
+    admin.photoPath = filename;
+    return this.adminRepository.save(admin);
+  }
+
+  async getPhotoPath(id: number): Promise<string> {
+    const admin = await this.findOne(id);
+    if (!admin.photoPath) {
+      throw new NotFoundException('Photo not found for this admin');
     }
-    this.admin.push(newPost);
-    return newPost;
-}
-
-
-update(id: number, updateAdminData: Partial<Omit<Post,'id' | 'createdAt'>>): Post{
-    const currentIndexToEdit=this.admin.findIndex(
-        (post)=>post.id===id,
-    );
-    if(currentIndexToEdit===-1){
-        throw new NotFoundException(`Admin with ID ${id} not found !`)
-    }
-    this.admin[currentIndexToEdit]={
-        ...this.admin[currentIndexToEdit],
-        ...updateAdminData,
-        updatedAt: new Date(),
-    }
-    return this.admin[currentIndexToEdit];
-}
-
-
-remove(id:number):{message:string}{
-    const currentIndexToDelete = this.admin.findIndex((post)=>post.id===id);
-     if(currentIndexToDelete===-1){
-        throw new NotFoundException(`Admin with ID ${id} is not found`)
-    }
-    this.admin.splice(currentIndexToDelete,1)
-        return {message:`Admin with ID ${id} has been deleted...`}  
-}
-
-
-private getNextId():number{
-    return this.admin.length>0
-    ?Math.max(...this.admin.map(post=> post.id))+1:1
-}
-
-updatePhotoPath(id: number, filename: string): Post {
-    const index = this.admin.findIndex(post => post.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Admin with ID ${id} not found`);
-    }
-    this.admin[index].photoPath = filename;
-    return this.admin[index];
+    return admin.photoPath;
   }
 }
-
-
-

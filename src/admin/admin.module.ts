@@ -3,14 +3,17 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminEntity } from './entities/admin.entity';
+
 @Module({
   imports: [
+    TypeOrmModule.forFeature([AdminEntity]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'uploads'),
       serveRoot: '/uploads',
     }),
   ],
-  //imports :[AppModule],
   controllers: [AdminController],
   providers: [AdminService]
 })

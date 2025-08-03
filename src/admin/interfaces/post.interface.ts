@@ -3,12 +3,9 @@ export interface Post {
   name: string;
   password: string;
   mail: string;
-  birthDate: Date;
-  address?: string;
-  content: string;
   socialMediaLink: string;
   photoPath?: string;
-  createdAt: Date;
-  updatedAt?: Date;
-   
+  uniqueId: string;
+  joiningDate: Date;
+  country: string;
 }

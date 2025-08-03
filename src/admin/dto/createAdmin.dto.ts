@@ -1,6 +1,7 @@
 import { 
   IsNotEmpty, IsString, MaxLength, MinLength, IsUrl, 
-  IsDateString, Matches 
+  Matches, IsOptional,
+  IsUUID
 } from 'class-validator';
 
 export class CreateAdminDto {
@@ -21,22 +22,22 @@ export class CreateAdminDto {
   })
   password: string;
 
-  @IsNotEmpty({ message: 'Birth date is required' })
-  @IsDateString()
-  birthDate: Date;
-
   @IsUrl()
   socialMediaLink: string;
-
-  @IsNotEmpty({ message: 'Content is required' })
-  @IsString({ message: 'Content must be a string' })
-  @MinLength(10, { message: 'Content must be at least 10 characters long' })
-  @MaxLength(150, { message: 'Content must not exceed 150 characters' })
-  content: string;
 
   @IsNotEmpty({ message: 'Mail is required' })
   @IsString({ message: 'Mail must be a string' })
   @MinLength(7, { message: 'Mail must be at least 7 characters long' })
   @MaxLength(50, { message: 'Mail must not exceed 50 characters' })
   mail: string;
+
+  @IsOptional()
+  @MaxLength(150, { message: 'Unique ID must not exceed 150 characters' })
+  @IsUUID('4', { message: 'uniqueId cannot be same' })
+  uniqueId?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Country must be a string' })
+  @MaxLength(30, { message: 'Country must not exceed 30 characters' })
+  country?: string;
 }
