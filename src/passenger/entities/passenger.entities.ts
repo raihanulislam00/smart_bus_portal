@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert, OneToMany } from 'typeorm';
+import { Ticket } from './ticket.entity';
+import * as bcrypt from 'bcrypt';
 
 @Entity('passengers')
 export class Passenger {
@@ -7,6 +9,9 @@ export class Passenger {
 
     @Column({ type: 'varchar', length: 100, unique: true })
     username: string;
+
+    @OneToMany(() => Ticket, ticket => ticket.passenger)
+    tickets: Ticket[];
 
     @Column({ type: 'varchar', length: 150 })
     fullName: string;
@@ -39,16 +44,24 @@ export class Passenger {
     photoPath?: string;
 
     @BeforeInsert()
-    generateId() {
-        // Custom logic before insertion
-        // You can add any custom ID generation logic here
-        console.log('Generating custom ID logic before insertion');
-        // For example, you could set default values or perform validation
+    async hashPassword() {
+        if (this.password) {
+            const salt = await bcrypt.genSalt();
+            this.password = await bcrypt.hash(this.password, salt);
+        }
+        
         if (!this.username) {
             throw new Error('Username is required');
         }
         if (!this.fullName) {
             throw new Error('Full name is required');
         }
+    }
+
+    async validatePassword(password: string): Promise<boolean> {
+        if (!this.password) {
+            return false;
+        }
+        return bcrypt.compare(password, this.password);
     }
 } 

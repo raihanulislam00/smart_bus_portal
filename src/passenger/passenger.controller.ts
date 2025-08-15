@@ -13,9 +13,14 @@ import {
     Query, 
     Res, 
     UploadedFile, 
-    UseInterceptors, 
+    UseInterceptors,
+    UseGuards,
     ValidationPipe 
 } from '@nestjs/common';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CreateTicketDto } from './dto/create-ticket.dto';
+import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { LoginDto } from './dto/login.dto';
 import { PassengerService } from './passenger.service';
 import { CreatePassengerDto } from './dto/createPassenger.dto';
 import { UpdatePassengerDto } from './dto/updatePassenger.dto';
@@ -28,15 +33,43 @@ import { Passenger } from './entities/passenger.entities';
 export class PassengerController {
     constructor(private readonly passengerService: PassengerService) {}
 
-    // Legacy endpoints for backward compatibility
-    @Get('user/:name')
-    getPassengerName(@Param('name') name: string): string {
-        return this.passengerService.getPassengerName(name);
+    @Post('login')
+    @HttpCode(HttpStatus.OK)
+    async login(@Body() loginDto: LoginDto) {
+        return await this.passengerService.login(loginDto);
     }
 
-    @Get('query')
-    getPassengerWithQuery(@Query('name') name?: string): string {
-        return this.passengerService.getPassengerName(name || 'world');
+    @UseGuards(JwtAuthGuard)
+    @Post(':id/tickets')
+    async createTicket(
+        @Param('id', ParseIntPipe) passengerId: number,
+        @Body() createTicketDto: CreateTicketDto
+    ) {
+        return await this.passengerService.createTicket(passengerId, createTicketDto);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get(':id/tickets')
+    async getPassengerTickets(@Param('id', ParseIntPipe) passengerId: number) {
+        return await this.passengerService.getPassengerTickets(passengerId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete(':passengerId/tickets/:ticketId')
+    async cancelTicket(
+        @Param('passengerId', ParseIntPipe) passengerId: number,
+        @Param('ticketId', ParseIntPipe) ticketId: number
+    ) {
+        return await this.passengerService.cancelTicket(passengerId, ticketId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Put('tickets/:ticketId/status')
+    async updateTicketStatus(
+        @Param('ticketId', ParseIntPipe) ticketId: number,
+        @Body() updateTicketStatusDto: UpdateTicketStatusDto
+    ) {
+        return await this.passengerService.updateTicketStatus(ticketId, updateTicketStatusDto.status);
     }
 
     // Create a user
